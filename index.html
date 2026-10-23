@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Renewly – never miss a licence renewal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF3F2;--card:#fff;--ink:#12303A;--mute:#5B7279;--line:#D5E0DE;--accent:#0F766E;--over:#B42318;--soon:#A15C07;--ok:#2F6F4E;--over-bg:#FDECEA;--soon-bg:#FDF1DC;--ok-bg:#E4F3EA}
+@media(prefers-color-scheme:dark){:root{--bg:#0E1D22;--card:#152A31;--ink:#E6F0EE;--mute:#93AAB0;--line:#27414A;--accent:#4FD1C5;--over:#FF8A80;--soon:#F6C26B;--ok:#7BD9A4;--over-bg:#3A1B1B;--soon-bg:#3A2D12;--ok-bg:#12332A}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,sans-serif}
+h1,h2,.big{font-family:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;margin:0}
+header{padding:28px 20px 8px;max-width:1040px;margin:auto}
+header p{margin:4px 0 0;color:var(--mute);max-width:60ch}
+.banner{max-width:1040px;margin:16px auto;padding:0 20px}
+.next{display:flex;align-items:center;gap:20px;padding:20px 24px;border-radius:14px;background:var(--ink);color:var(--bg)}
+.next .big{font-size:clamp(48px,10vw,88px);font-weight:800;line-height:1}
+.next small{display:block;opacity:.8}
+.next.overdue{background:var(--over);color:#fff}.next.empty{background:var(--card);color:var(--mute);border:1px dashed var(--line)}
+main{max-width:1040px;margin:auto;padding:0 20px 60px;display:grid;grid-template-columns:320px 1fr;gap:24px}
+@media(max-width:800px){main{grid-template-columns:1fr}}
+form,.list{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px}
+form{align-self:start}
+label{display:block;font-weight:500;margin-top:12px;font-size:14px}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{width:100%;padding:9px 10px;margin-top:4px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button{cursor:pointer;border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;margin-top:16px;width:100%}
+@media(prefers-color-scheme:dark){button.primary{color:#0E1D22}}
+.errors{color:var(--over);font-size:14px;margin:10px 0 0;padding:0;list-style:none}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.tools .sp{flex:1}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+ul.items{list-style:none;margin:0;padding:0}
+.item{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.badge{text-align:center;border-radius:10px;padding:8px 4px;font-weight:600}
+.badge b{display:block;font:800 26px/1 "Bricolage Grotesque",sans-serif}
+.badge.overdue{background:var(--over-bg);color:var(--over)}.badge.soon{background:var(--soon-bg);color:var(--soon)}.badge.ok{background:var(--ok-bg);color:var(--ok)}
+.item h2{font-size:18px}.meta{color:var(--mute);font-size:14px}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.empty-msg{color:var(--mute);padding:24px 0;text-align:center}
+@media(max-width:560px){.item{grid-template-columns:80px 1fr}.acts{grid-column:1/-1;justify-content:flex-start}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Renewly</h1>
+  <p>For small business owners who juggle licences, registrations and certificates. Add each one once, see what expires next, and get calendar reminders.</p>
+</header>
+<div class="banner" id="banner" aria-live="polite"></div>
+<main>
+  <form id="form" novalidate>
+    <h2>Add an item</h2>
+    <label for="name">Name<input id="name" placeholder="e.g. FSSAI food licence" required></label>
+    <label for="category">Category
+      <select id="category"><option>Licence</option><option>Tax</option><option>Insurance</option><option>Certificate</option><option>Contract</option><option>Other</option></select>
+    </label>
+    <label for="due">Expiry date<input id="due" type="date" required></label>
+    <label for="cycle">Renews every (months, 0 for one-time)<input id="cycle" type="number" min="0" max="120" value="12"></label>
+    <label for="notes">Notes (optional)<textarea id="notes" rows="2" placeholder="Licence no., who handles it, portal link"></textarea></label>
+    <ul class="errors" id="errors" role="alert"></ul>
+    <button class="primary" type="submit">Add item</button>
+    <button type="button" id="sample" style="width:100%;margin-top:8px">Load sample data</button>
+  </form>
+  <section class="list" aria-label="Tracked items">
+    <div class="tools">
+      <button class="chip" data-f="all" aria-pressed="true">All</button>
+      <button class="chip" data-f="overdue" aria-pressed="false">Overdue</button>
+      <button class="chip" data-f="soon" aria-pressed="false">Due in 30 days</button>
+      <button class="chip" data-f="ok" aria-pressed="false">On track</button>
+      <span class="sp"></span>
+      <button id="csv">Download CSV</button>
+      <button id="ics">Add to calendar (.ics)</button>
+    </div>
+    <ul class="items" id="items"></ul>
+  </section>
+</main>
+<script src="logic.js"></script>
+<script>
+const KEY = 'renewly.items.v1';
+const $ = (id) => document.getElementById(id);
+let items = load(), filter = 'all';
+
+function load() {
+  try { const v = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(v) ? v : []; }
+  catch (e) { return []; }
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch (e) { /* private mode: keep in memory */ } }
+const today = () => { const d = new Date(); return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-'); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+function el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function when(days) {
+  if (days < 0) return Math.abs(days) === 1 ? '1 day overdue' : Math.abs(days) + ' days overdue';
+  return days === 0 ? 'Expires today' : days === 1 ? '1 day left' : days + ' days left';
+}
+
+function render() {
+  const t = today();
+  const sorted = Logic.sortItems(items, t);
+  // Banner: most urgent item
+  const b = $('banner'); b.replaceChildren();
+  const box = el('div', 'next');
+  if (!sorted.length) { box.classList.add('empty'); box.append(el('div', null, 'Nothing tracked yet. Add your first licence or load sample data.')); }
+  else {
+    const first = sorted[0], d = Logic.daysUntil(first.due, t), c = Logic.counts(items, t);
+    if (d < 0) box.classList.add('overdue');
+    box.append(el('div', 'big', String(Math.abs(d))));
+    const txt = el('div'); txt.append(el('strong', null, first.name), el('small', null, when(d) + (c.overdue + c.soon > 1 ? ' · ' + (c.overdue + c.soon - 1) + ' more need attention' : '')));
+    box.append(txt);
+  }
+  b.append(box);
+
+  const ul = $('items'); ul.replaceChildren();
+  const shown = sorted.filter((i) => filter === 'all' || Logic.statusOf(Logic.daysUntil(i.due, t)) === filter);
+  if (!shown.length) ul.append(el('li', 'empty-msg', items.length ? 'No items in this view.' : 'Your list is empty.'));
+  shown.forEach((i) => {
+    const d = Logic.daysUntil(i.due, t), s = Logic.statusOf(d);
+    const li = el('li', 'item');
+    const badge = el('div', 'badge ' + s); badge.append(el('b', null, String(Math.abs(d))), el('span', null, d < 0 ? 'days late' : 'days left'));
+    const info = el('div'); info.append(el('h2', null, i.name), el('div', 'meta', `${i.category} · expires ${i.due}` + (Number(i.cycle) ? ` · renews every ${i.cycle} mo` : ' · one-time')));
+    if (i.notes) info.append(el('div', 'meta', i.notes));
+    const acts = el('div', 'acts');
+    if (Number(i.cycle)) { const r = el('button', null, 'Mark renewed'); r.onclick = () => { items = items.map((x) => x.id === i.id ? Logic.renew(x) : x); save(); render(); }; acts.append(r); }
+    const del = el('button', null, 'Delete'); del.setAttribute('aria-label', 'Delete ' + i.name);
+    del.onclick = () => { if (confirm('Delete "' + i.name + '"?')) { items = items.filter((x) => x.id !== i.id); save(); render(); } };
+    acts.append(del);
+    li.append(badge, info, acts); ul.append(li);
+  });
+}
+
+$('form').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const item = { id: uid(), name: $('name').value.trim(), category: $('category').value, due: $('due').value, cycle: $('cycle').value === '' ? 0 : Number($('cycle').value), notes: $('notes').value.trim() };
+  const errs = Logic.validate(item);
+  $('errors').replaceChildren(...errs.map((m) => el('li', null, m)));
+  if (errs.length) return;
+  items.push(item); save(); e.target.reset(); $('cycle').value = 12; render(); $('name').focus();
+});
+
+document.querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+  filter = c.dataset.f; document.querySelectorAll('.chip').forEach((x) => x.setAttribute('aria-pressed', String(x === c))); render();
+}));
+
+function download(name, mime, text) {
+  const a = el('a'); a.href = URL.createObjectURL(new Blob([text], { type: mime })); a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+$('csv').onclick = () => items.length ? download('renewly.csv', 'text/csv', Logic.toCSV(Logic.sortItems(items, today()))) : alert('Add at least one item first.');
+$('ics').onclick = () => items.length ? download('renewly.ics', 'text/calendar', Logic.toICS(items)) : alert('Add at least one item first.');
+
+$('sample').onclick = () => {
+  const add = (m) => Logic.addMonths(today(), m) ;
+  const d = (n) => { const x = new Date(); x.setDate(x.getDate() + n); return [x.getFullYear(), String(x.getMonth() + 1).padStart(2, '0'), String(x.getDate()).padStart(2, '0')].join('-'); };
+  items.push(
+    { id: uid(), name: 'Shops & Establishment registration', category: 'Licence', due: d(-6), cycle: 12, notes: 'Renew on the state labour portal' },
+    { id: uid(), name: 'FSSAI food licence', category: 'Licence', due: d(18), cycle: 12, notes: '' },
+    { id: uid(), name: 'Fire safety certificate', category: 'Certificate', due: d(75), cycle: 12, notes: '' },
+    { id: uid(), name: 'Shop insurance policy', category: 'Insurance', due: add(8), cycle: 12, notes: '' });
+  save(); render();
+};
+render();
+</script>
+</body>
+</html>
