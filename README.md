@@ -1,6 +1,6 @@
 # Renewly
 
-**Live demo:** https://renewly-beryl.vercel.app/ **Demo video:** _add link here_
+**Live demo:** https://renewly-beryl.vercel.app/ **Demo video:** https://drive.google.com/file/d/1kYQoMVmxS_fg66FSOFDoGcdznPqoTLcF/view?usp=drivesdk
 
 A small web tool that tracks licence, registration and certificate expiry dates and tells you what needs attention next.
 
