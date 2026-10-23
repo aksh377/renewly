@@ -1,6 +1,6 @@
 # Renewly
 
-**Live demo:** https://github.com/aksh377/renewly/ · **Demo video:** _add link here_
+**Live demo:** https://vercel.com/akshayaakshaya4856-9724/renewly · **Demo video:** _add link here_
 
 A small web tool that tracks licence, registration and certificate expiry dates and tells you what needs attention next.
 
